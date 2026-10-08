@@ -1,0 +1,99 @@
+/* Visa Assessment — Modern Corporate Styling */
+:root {
+  --va-primary: #0a4d8c;
+  --va-primary-dark: #073a6b;
+  --va-accent: #00b3a4;
+  --va-amber: #f5a623;
+  --va-surface: #f6f9fc;
+  --va-card: #ffffff;
+  --va-text: #0d1b2a;
+  --va-muted: #6c757d;
+  --va-border: #e2e8f0;
+}
+
+.assessment-wrap {
+  background: linear-gradient(180deg, var(--va-surface) 0%, #fff 60%);
+  min-height: 100vh;
+}
+
+.section-card {
+  background: var(--va-card);
+  border: 1px solid var(--va-border);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(10,77,140,0.06), 0 1px 2px rgba(10,77,140,0.04);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.section-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(10,77,140,0.09), 0 2px 4px rgba(10,77,140,0.06);
+}
+.section-card .section-header {
+  background: linear-gradient(135deg, #f8fbff 0%, #fff 100%);
+  border-bottom: 1px solid var(--va-border);
+  padding: 1.1rem 1.25rem;
+  display: flex; align-items: center; gap: .75rem;
+}
+.section-card .section-header .icon-circle {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--va-primary) 0%, var(--va-primary-dark) 100%);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 1.15rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(10,77,140,.25);
+}
+.section-card .section-header h3 {
+  font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 1.05rem;
+  margin: 0; color: var(--va-text); letter-spacing: -.2px;
+}
+.section-card .section-header .step-num {
+  margin-left: auto; font-weight: 700; font-size: .85rem; color: var(--va-muted);
+}
+
+.form-label { font-weight: 500; font-size: .88rem; color: var(--va-text); }
+.form-control, .form-select {
+  border: 1.5px solid #dde3ec; border-radius: .6rem; padding: .55rem .85rem;
+  font-size: .92rem; color: var(--va-text); background: #fff;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--va-primary); box-shadow: 0 0 0 3px rgba(10,77,140,.08);
+}
+input[type="date"] { color-scheme: light; }
+
+.conditional-field { display: none; animation: fadeIn .25s ease; }
+.conditional-field.show { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px);} to { opacity: 1; transform: translateY(0);} }
+
+.assessment-hero {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, #0a4d8c 0%, #073a6b 60%, #00b3a4 100%);
+  color: #fff; padding: 5rem 0 5.5rem; text-align: center;
+}
+.assessment-hero::before {
+  content: ""; position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: .8;
+}
+.assessment-hero .hero-content { position: relative; z-index: 2; }
+.assessment-hero h1 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 3rem; letter-spacing: -.02em; }
+.assessment-hero p.lead { font-family: 'Poppins', sans-serif; font-weight: 300; font-size: 1.15rem; opacity: .92; }
+
+.submit-btn {
+  background: linear-gradient(135deg, var(--va-primary) 0%, var(--va-primary-dark) 100%);
+  border: none; border-radius: 9999px; padding: 1rem 2.5rem; font-weight: 600; font-size: 1.05rem;
+  box-shadow: 0 10px 25px rgba(10,77,140,.3); transition: transform .15s ease, box-shadow .15s ease;
+}
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(10,77,140,.35); }
+
+.side-card {
+  background: linear-gradient(135deg, #fff 0%, #f8fbff 100%);
+  border: 1px solid var(--va-border); border-radius: 1rem; padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(10,77,140,.05);
+}
+.side-card h4 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--va-text); }
+.side-card .contact-link { color: var(--va-primary); font-weight: 500; text-decoration: none; }
+.side-card .contact-link:hover { text-decoration: underline; }
+
+@media (max-width: 991.98px) {
+  .assessment-hero h1 { font-size: 2.1rem; }
+  .assessment-hero { padding: 3rem 0 4rem; }
+}
