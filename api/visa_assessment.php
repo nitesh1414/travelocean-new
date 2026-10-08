@@ -7,16 +7,62 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-if (!verify_csrf($_POST['csrf_token'] ?? '')) {
+$csrfToken = isset($_POST['csrf_token']) && is_string($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
+if (!verify_csrf($csrfToken)) {
     echo json_encode(['success' => false, 'message' => 'Invalid CSRF token.']);
     exit;
 }
 
-$name  = trim($_POST['full_legal_name'] ?? '');
-$email = trim($_POST['email'] ?? '');
+function visa_assessment_post_value($field) {
+    $value = $_POST[$field] ?? '';
+    return is_scalar($value) ? trim((string)$value) : '';
+}
 
-if (!$name || !$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+$name = visa_assessment_post_value('full_legal_name');
+$email = visa_assessment_post_value('email');
+$requiredFields = [
+    'dob' => 'date of birth',
+    'gender' => 'gender',
+    'birthplace_country' => 'country of birth',
+    'nationality' => 'nationality or citizenship',
+    'marital_status' => 'marital status',
+    'address_country' => 'current country',
+    'phone' => 'phone number with country code',
+    'target_countries' => 'target destination country',
+    'visa_category' => 'visa category',
+    'previous_visa_yesno' => 'previous visa information',
+    'refusal_yesno' => 'previous refusal information',
+    'family_target_country' => 'family or relatives in the target destination',
+    'education_level' => 'highest level of education',
+    'english_proficiency' => 'English proficiency',
+    'employment_status' => 'current employment status',
+    'source_of_funds' => 'source of funds',
+    'assets_yesno' => 'asset information',
+    'valid_visas_yesno' => 'valid travel visa information',
+    'criminal_record_yesno' => 'criminal record information',
+    'medical_conditions_yesno' => 'medical condition information',
+];
+
+if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     echo json_encode(['success' => false, 'message' => 'Please provide your full legal name and a valid email address.']);
+    exit;
+}
+
+foreach ($requiredFields as $field => $label) {
+    if (visa_assessment_post_value($field) === '') {
+        echo json_encode(['success' => false, 'message' => 'Please provide your ' . $label . '.']);
+        exit;
+    }
+}
+
+$phone = visa_assessment_post_value('phone');
+if (!preg_match('/^\\+[1-9][0-9\\s().-]{5,24}$/', $phone) || strlen(preg_replace('/\\D/', '', $phone)) < 7) {
+    echo json_encode(['success' => false, 'message' => 'Please enter a complete phone number including a leading + and country code.']);
+    exit;
+}
+
+if (visa_assessment_post_value('family_target_country') === 'Yes' && visa_assessment_post_value('family_target_details') === '') {
+    echo json_encode(['success' => false, 'message' => 'Please specify the relation and residency or immigration status of your family member or relative.']);
     exit;
 }
 

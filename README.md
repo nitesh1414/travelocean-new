@@ -70,12 +70,15 @@ traveloceans/
 │
 ├── api/
 │   ├── contact.php         # AJAX contact form handler
-│   └── newsletter.php      # AJAX newsletter handler
+│   ├── newsletter.php      # Newsletter handler
+│   ├── visa_assessment.php # Visa assessment submissions
+│   └── locations.php       # Country/state/city search data
 │
 ├── assets/
 │   ├── css/style.css       # Main stylesheet
 │   ├── js/main.js          # Main JavaScript (slider, AJAX, counters…)
-│   └── uploads/            # User-uploaded images
+│   ├── uploads/            # User-uploaded images
+│   └── data/               # Location reference data + attribution
 │
 ├── sql/schema.sql          # Database schema + seed data
 └── install.php             # One-time installer
@@ -83,7 +86,7 @@ traveloceans/
 
 ## 🗄 Database
 
-The schema includes 15 tables fully populated with seed content from traveloceans.eu:
+The schema includes 19 tables, with the public content tables seeded from traveloceans.eu:
 
 - `admins` — admin users
 - `settings` — site configuration (name, phones, social, important notice…)
@@ -95,19 +98,27 @@ The schema includes 15 tables fully populated with seed content from travelocean
 - `why_choose` — "Why Choose Travel Oceans" reasons
 - `documentation_categories` + `documentation_items` — Documentation services
 - `testimonials` — Client testimonials
-- `contact_messages` — Form submissions
+- `contact_messages` — Contact form submissions
+- `visa_assessments` — Confidential visa assessment submissions
 - `subscribers` — Newsletter subscribers
 - `pages` — Static CMS pages
 
 ## ✨ Interactive Features
 
+Visa assessment location data includes 250 countries/territories, 4,963 states/provinces,
+and 148,038 city records. The searchable lists are loaded as needed; users can also type
+a location if a small locality is not present. Data attribution and license details are
+in `assets/data/LOCATION-DATA-LICENSE.txt`.
+
 - **Hero slider** with autoplay & fade animation
 - **AJAX contact form** with success/error toasts
+- **Visa assessment form** with searchable country, state/province, and city suggestions
 - **Newsletter** subscription with validation
 - **Animated counters** on scroll
 - **Scroll-reveal animations** (AOS library)
 - **Sticky navigation** with active page indicator
 - **Mobile-friendly** hamburger menu
+- **Responsive dropdown navigation** with scrollable Services and Study Abroad menus
 - **Floating WhatsApp button** with pulse animation
 - **Back-to-top** button
 - **Bootstrap 5 + Bootstrap Icons** for polished UI

@@ -182,3 +182,74 @@ function truncate($text, $len = 120) {
     if (strlen($text) <= $len) return $text;
     return substr($text, 0, $len) . '…';
 }
+
+/* ---------- Visa assessment submissions ---------- */
+function save_visa_assessment($data) {
+    $fields = [
+        'full_legal_name', 'dob', 'gender', 'birthplace_country', 'birthplace_state',
+        'birthplace_city', 'nationality', 'passport_number', 'passport_issue',
+        'passport_expiry', 'current_residency', 'address_country', 'address_state',
+        'address_city', 'address', 'phone', 'email', 'marital_status',
+        'spouse_partner_details', 'family_target_country', 'family_target_details',
+        'target_countries', 'visa_category', 'intended_travel_date', 'expected_duration',
+        'previous_visa_yesno', 'previous_visa_details', 'refusal_yesno', 'refusal_details',
+        'education_level', 'institution_country', 'field_of_study', 'graduation_year',
+        'native_language', 'english_proficiency', 'english_test_score', 'other_languages',
+        'french_spanish_test_score', 'employment_status', 'job_title', 'employer_industry',
+        'years_experience', 'employment_summary', 'employer1_details', 'employer2_details',
+        'source_of_funds', 'liquid_funds', 'monthly_income', 'assets_yesno', 'assets_summary',
+        'travel_history_countries', 'valid_visas_yesno', 'valid_visas_list',
+        'criminal_record_yesno', 'criminal_details', 'medical_conditions_yesno', 'medical_details',
+    ];
+
+    $record = [];
+    foreach ($fields as $field) {
+        $value = $data[$field] ?? '';
+        if (is_array($value) || is_object($value)) $value = '';
+        $value = trim((string)$value);
+        $record[$field] = $value === '' ? null : $value;
+    }
+
+    $dependentChildren = $data['dependent_children'] ?? 0;
+    $record['dependent_children'] = max(0, min(100, is_numeric($dependentChildren) ? (int)$dependentChildren : 0));
+    $children = [];
+    $submittedChildren = $data['children'] ?? [];
+    if (!is_array($submittedChildren)) $submittedChildren = [];
+    foreach ($submittedChildren as $child) {
+        if (!is_array($child)) continue;
+        $nameValue = $child['name'] ?? '';
+        $ageValue = $child['age'] ?? '';
+        $nationalityValue = $child['nationality'] ?? '';
+        $name = is_scalar($nameValue) ? trim((string)$nameValue) : '';
+        $age = is_scalar($ageValue) ? trim((string)$ageValue) : '';
+        $nationality = is_scalar($nationalityValue) ? trim((string)$nationalityValue) : '';
+        if ($name === '' && $age === '' && $nationality === '') continue;
+        $children[] = [
+            'name' => $name,
+            'age' => $age === '' ? null : max(0, min(120, (int)$age)),
+            'nationality' => $nationality,
+        ];
+    }
+    $record['children_json'] = $children
+        ? json_encode($children, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE)
+        : null;
+    $record['ip_address'] = substr((string)($_SERVER['REMOTE_ADDR'] ?? ''), 0, 60);
+
+    return DB::insert('visa_assessments', $record);
+}
+
+function get_visa_assessments($limit = 200, $status = null) {
+    $limit = max(1, min(1000, (int)$limit));
+    $sql = 'SELECT * FROM visa_assessments';
+    $params = [];
+    if ($status !== null && in_array($status, ['pending', 'in_review', 'processed'], true)) {
+        $sql .= ' WHERE status = ?';
+        $params[] = $status;
+    }
+    $sql .= ' ORDER BY created_at DESC, id DESC LIMIT ' . $limit;
+    return DB::fetchAll($sql, $params);
+}
+
+function get_visa_assessment_by_id($id) {
+    return DB::fetch('SELECT * FROM visa_assessments WHERE id = ?', [(int)$id]);
+}
