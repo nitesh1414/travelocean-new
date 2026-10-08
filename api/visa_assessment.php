@@ -89,7 +89,7 @@ try {
     if ($sqlState === '42S22') {
         echo json_encode([
             'success' => false,
-            'message' => 'The visa assessment database schema needs to be updated. Please contact the site administrator.'
+            'message' => 'The existing visa assessment table is missing required columns. Run sql/upgrade_visa_assessments.sql against the configured database, then try again.'
         ]);
         exit;
     }
