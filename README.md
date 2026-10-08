@@ -103,6 +103,10 @@ The schema includes 19 tables, with the public content tables seeded from travel
 - `subscribers` — Newsletter subscribers
 - `pages` — Static CMS pages
 
+For existing installations created before visa-assessment support, import
+`sql/visa_assessment.sql` into the database selected by `DB_NAME` in
+`includes/config.php` before accepting assessment submissions.
+
 ## ✨ Interactive Features
 
 Visa assessment location data includes 250 countries/territories, 4,963 states/provinces,

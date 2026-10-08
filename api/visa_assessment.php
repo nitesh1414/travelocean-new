@@ -73,6 +73,26 @@ try {
         'message' => 'Your Free Visa Assessment has been submitted successfully. Our consultants will review it and contact you shortly.',
         'id' => $id
     ]);
-} catch (Exception $e) {
+} catch (Throwable $e) {
+    // Keep implementation details out of the response, but log enough for the
+    // server administrator to identify database/schema problems.
+    error_log('[visa_assessment] Submission failed: ' . $e->getMessage());
+
+    $sqlState = $e instanceof PDOException ? (string)$e->getCode() : '';
+    if ($sqlState === '42S02') {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Visa assessment storage is not initialized. Import sql/visa_assessment.sql into the database configured for this site, then try again.'
+        ]);
+        exit;
+    }
+    if ($sqlState === '42S22') {
+        echo json_encode([
+            'success' => false,
+            'message' => 'The visa assessment database schema needs to be updated. Please contact the site administrator.'
+        ]);
+        exit;
+    }
+
     echo json_encode(['success' => false, 'message' => 'Unable to submit your assessment right now. Please try again later.']);
 }
