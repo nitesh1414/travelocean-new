@@ -105,7 +105,7 @@ ob_start();
           <dt>Nationality</dt><dd><?= e($record['nationality']) ?></dd>
           <dt>Current Residency</dt><dd><?= e($record['current_residency']) ?></dd>
           <dt>Passport</dt><dd><?= e($record['passport_number']) ?> (<?= e($record['passport_issue']) ?> — <?= e($record['passport_expiry']) ?>)</dd>
-          <dt>Address (Country / State / City)</dt><dd><?= e($record['address_country']) ?> — <?= e($record['address_state']) ?> — <?= e($record['address_city']) ?></dd>
+          <dt>Current Country / State / City</dt><dd><?= e($record['address_country']) ?> — <?= e($record['address_state']) ?> — <?= e($record['address_city']) ?></dd>
           <dt>Street / Full Address</dt><dd><?= nl2br(e($record['address'])) ?></dd>
           <dt>Phone</dt><dd><?= e($record['phone']) ?></dd>
         </dl>
@@ -127,14 +127,14 @@ ob_start();
               <span class="text-muted">None listed</span>
             <?php endif; ?>
           </dd>
-          <dt>Family in target country?</dt><dd><?= e($record['family_target_country']) ?></dd>
+          <dt>Immediate family / relatives in destination?</dt><dd><?= e($record['family_target_country']) ?></dd>
           <dt>Details</dt><dd><?= nl2br(e($record['family_target_details'])) ?></dd>
         </dl>
       </div>
       <div class="col-md-6">
         <h5 class="mb-2"><i class="bi bi-airplane-fill text-primary me-1"></i> Travel Purpose</h5>
         <dl class="small mb-0">
-          <dt>Target Countries</dt><dd><?= e($record['target_countries']) ?></dd>
+          <dt>Target Destination Country</dt><dd><?= e($record['target_countries']) ?></dd>
           <dt>Visa Category</dt><dd><?= e($record['visa_category']) ?></dd>
           <dt>Intended Travel</dt><dd><?= e($record['intended_travel_date']) ?></dd>
           <dt>Duration</dt><dd><?= e($record['expected_duration']) ?></dd>
