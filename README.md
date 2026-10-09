@@ -112,10 +112,11 @@ not update a table that already exists.
 
 ## ✨ Interactive Features
 
-Visa assessment location data includes 250 countries/territories, 4,963 states/provinces,
-and 148,038 city records. The searchable lists are loaded as needed; users can also type
-a location if a small locality is not present. Data attribution and license details are
-in `assets/data/LOCATION-DATA-LICENSE.txt`.
+Visa assessment suggestions load from `/assets/data/countries_states_cities.json`.
+Bundled `countries.json` and `locations.json` provide a local fallback. The
+reference data covers 250 countries/territories, 4,963 states/provinces, and
+148,038 city records; users can also type locations not listed. Data attribution
+and license details are in `assets/data/LOCATION-DATA-LICENSE.txt`.
 
 - **Hero slider** with autoplay & fade animation
 - **AJAX contact form** with success/error toasts

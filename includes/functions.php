@@ -211,7 +211,7 @@ function save_visa_assessment($data) {
     }
 
     $dependentChildren = $data['dependent_children'] ?? 0;
-    $record['dependent_children'] = max(0, min(100, is_numeric($dependentChildren) ? (int)$dependentChildren : 0));
+    $record['dependent_children'] = max(0, min(10, is_numeric($dependentChildren) ? (int)$dependentChildren : 0));
     $children = [];
     $submittedChildren = $data['children'] ?? [];
     if (!is_array($submittedChildren)) $submittedChildren = [];

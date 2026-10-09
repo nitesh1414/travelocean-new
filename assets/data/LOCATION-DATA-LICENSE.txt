@@ -1,8 +1,8 @@
 Location data attribution
 ========================
 
-The country, state/province, and city reference data in countries.json and
-locations.json was derived from country-state-city version 3.2.1.
+The bundled country, state/province, and city reference data in countries.json
+and locations.json was derived from country-state-city version 3.2.1.
 
 Package source: https://github.com/harpreetkhalsagtbit/country-state-city
 Underlying data source: https://github.com/dr5hn/countries-states-cities-database

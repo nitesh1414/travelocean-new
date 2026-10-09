@@ -1,12 +1,6 @@
 <?php
 $page_title = 'Free Visa Assessment';
 require_once __DIR__ . '/includes/header.php';
-
-$country_catalog_file = __DIR__ . '/assets/data/countries.json';
-$country_catalog = is_readable($country_catalog_file)
-  ? json_decode(file_get_contents($country_catalog_file), true)
-  : [];
-$country_catalog = is_array($country_catalog) ? $country_catalog : [];
 ?>
 
 <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/visa-assessment.css">
@@ -42,13 +36,9 @@ $country_catalog = is_array($country_catalog) ? $country_catalog : [];
         </div>
         <p class="text-muted mb-4">Please fill out all sections honestly and completely. Your information is kept confidential and used only to prepare your evaluation.</p>
 
-        <form id="assessmentForm" class="ajax-form" method="post" action="<?= SITE_URL ?>/api/visa_assessment.php" data-location-endpoint="<?= SITE_URL ?>/api/locations.php" novalidate>
+        <form id="assessmentForm" class="ajax-form" method="post" action="<?= SITE_URL ?>/api/visa_assessment.php" data-location-catalog="<?= SITE_URL ?>/assets/data/countries_states_cities.json" data-fallback-countries="<?= SITE_URL ?>/assets/data/countries.json" data-fallback-locations="<?= SITE_URL ?>/assets/data/locations.json" novalidate>
           <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-          <datalist id="country-options">
-            <?php foreach ($country_catalog as $country): ?>
-              <option value="<?= e($country['name']) ?>" label="<?= e($country['name']) ?> (+<?= e($country['phoneCode']) ?>)" data-code="<?= e($country['code']) ?>" data-phone-code="<?= e($country['phoneCode']) ?>"></option>
-            <?php endforeach; ?>
-          </datalist>
+          <datalist id="country-options"></datalist>
 
           <!-- 1. Personal -->
           <div class="section-card mb-4" id="sec-1">
@@ -67,13 +57,13 @@ $country_catalog = is_array($country_catalog) ? $country_catalog : [];
                   <input type="search" id="birthplace_country" name="birthplace_country" class="form-control location-country" list="country-options" data-state="birthplace_state" data-city="birthplace_city" autocomplete="country-name" placeholder="Search countries" required>
                 </div>
                 <div class="col-md-4">
-                  <label for="birthplace_state" class="form-label">State / Province of Birth</label>
-                  <input type="search" id="birthplace_state" name="birthplace_state" class="form-control location-state" list="birthplace-state-options" data-country="birthplace_country" data-city="birthplace_city" data-options="birthplace-state-options" autocomplete="address-level1" placeholder="Search states / provinces">
+                  <label for="birthplace_state" class="form-label">State / Province of Birth <span class="text-danger">*</span></label>
+                  <input type="search" id="birthplace_state" name="birthplace_state" class="form-control location-state" list="birthplace-state-options" data-country="birthplace_country" data-city="birthplace_city" data-options="birthplace-state-options" autocomplete="address-level1" placeholder="Search states / provinces" required>
                   <datalist id="birthplace-state-options"></datalist>
                 </div>
                 <div class="col-md-4">
-                  <label for="birthplace_city" class="form-label">City of Birth</label>
-                  <input type="search" id="birthplace_city" name="birthplace_city" class="form-control location-city" list="birthplace-city-options" data-country="birthplace_country" data-state="birthplace_state" data-options="birthplace-city-options" autocomplete="address-level2" placeholder="Search cities">
+                  <label for="birthplace_city" class="form-label">City of Birth <span class="text-danger">*</span></label>
+                  <input type="search" id="birthplace_city" name="birthplace_city" class="form-control location-city" list="birthplace-city-options" data-country="birthplace_country" data-state="birthplace_state" data-options="birthplace-city-options" autocomplete="address-level2" placeholder="Search cities" required>
                   <datalist id="birthplace-city-options"></datalist>
                 </div>
                 <div class="col-md-6">
@@ -93,17 +83,17 @@ $country_catalog = is_array($country_catalog) ? $country_catalog : [];
                   <input type="search" id="address_country" name="address_country" class="form-control location-country" list="country-options" data-state="address_state" data-city="address_city" autocomplete="country-name" placeholder="Search countries" required>
                 </div>
                 <div class="col-md-4">
-                  <label for="address_state" class="form-label">Current State / Province</label>
-                  <input type="search" id="address_state" name="address_state" class="form-control location-state" list="address-state-options" data-country="address_country" data-city="address_city" data-options="address-state-options" autocomplete="address-level1" placeholder="Search states / provinces">
+                  <label for="address_state" class="form-label">Current State / Province <span class="text-danger">*</span></label>
+                  <input type="search" id="address_state" name="address_state" class="form-control location-state" list="address-state-options" data-country="address_country" data-city="address_city" data-options="address-state-options" autocomplete="address-level1" placeholder="Search states / provinces" required>
                   <datalist id="address-state-options"></datalist>
                 </div>
                 <div class="col-md-4">
-                  <label for="address_city" class="form-label">Current City</label>
-                  <input type="search" id="address_city" name="address_city" class="form-control location-city" list="address-city-options" data-country="address_country" data-state="address_state" data-options="address-city-options" autocomplete="address-level2" placeholder="Search cities">
+                  <label for="address_city" class="form-label">Current City <span class="text-danger">*</span></label>
+                  <input type="search" id="address_city" name="address_city" class="form-control location-city" list="address-city-options" data-country="address_country" data-state="address_state" data-options="address-city-options" autocomplete="address-level2" placeholder="Search cities" required>
                   <datalist id="address-city-options"></datalist>
                 </div>
                 <div class="col-12">
-                  <p class="form-text mb-0">Type in any location field to search suggestions. If your state, province, or city is not listed, you can enter it manually.</p>
+                  <p class="form-text mb-0">Search suggestions in each field. All country, state / province, and city fields are required. If a state, province, or city is not listed, enter the applicable location manually; use “Not applicable” if your country does not use that division.</p>
                   <p id="location-status" class="form-text mt-1 mb-0" aria-live="polite"></p>
                 </div>
                 <div class="col-12"><label for="address" class="form-label">Street / Full Address</label><textarea id="address" name="address" rows="2" class="form-control" autocomplete="street-address" placeholder="Street, apartment, building, zip code"></textarea></div>
@@ -126,18 +116,13 @@ $country_catalog = is_array($country_catalog) ? $country_catalog : [];
             <div class="p-3 p-md-4">
               <div class="row g-3">
                 <div class="col-md-6"><label for="marital_status" class="form-label">Marital Status <span class="text-danger">*</span></label><select id="marital_status" name="marital_status" class="form-select" required><option value="">-- Select --</option><option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option><option>Common-law</option></select></div>
-                <div class="col-md-6"><label for="dependent_children" class="form-label">Number of Dependent Children</label><input type="number" id="dependent_children" name="dependent_children" class="form-control" min="0" max="10" value="0"></div>
+                <div class="col-md-6"><label for="dependent_children" class="form-label">Number of Dependent Children <span class="text-danger">*</span></label><input type="number" id="dependent_children" name="dependent_children" class="form-control" min="0" max="10" step="1" value="0" required></div>
                 <div class="col-12">
-                  <label class="form-label">Dependent Children <span class="text-muted">(add as needed)</span></label>
-                  <div id="children-container">
-                    <div class="child-row row g-2 mb-2 align-items-end" data-index="0">
-                      <div class="col-md-4"><input type="text" name="children[0][name]" class="form-control" placeholder="Child Name"></div>
-                      <div class="col-md-3"><input type="number" name="children[0][age]" class="form-control" placeholder="Age" min="0" max="120"></div>
-                      <div class="col-md-3"><input type="text" name="children[0][nationality]" class="form-control" placeholder="Nationality"></div>
-                      <div class="col-md-2"><button type="button" class="btn btn-sm btn-outline-danger w-100 remove-child">Remove</button></div>
-                    </div>
+                  <div id="children-fields" hidden>
+                    <h4 id="children-heading" class="h6 mb-2">Dependent Children</h4>
+                    <p class="form-text mt-0">Complete one details card for each dependent child.</p>
+                    <div id="children-container" aria-live="polite"></div>
                   </div>
-                  <button type="button" id="add-child" class="btn btn-sm btn-outline-primary mt-1"><i class="bi bi-plus-lg"></i> Add Child</button>
                 </div>
                 <div class="col-12"><label for="spouse_partner_details" class="form-label">Spouse / Partner Details (Name, DOB, Nationality — if traveling together)</label><textarea id="spouse_partner_details" name="spouse_partner_details" rows="2" class="form-control"></textarea></div>
               </div>
@@ -359,13 +344,12 @@ $country_catalog = is_array($country_catalog) ? $country_catalog : [];
       updateConditionalField();
     });
 
-    // Searchable, cascading country -> state/province -> city suggestions.
+    // Load the combined public countries/states/cities JSON once and use it for all suggestions.
     var assessmentForm = document.getElementById('assessmentForm');
     var countryOptions = document.getElementById('country-options');
-    var locationEndpoint = assessmentForm ? assessmentForm.dataset.locationEndpoint : '';
-    var stateCache = new Map();
-    var cityCache = new Map();
-    var requestControllers = new WeakMap();
+    var locationCatalogUrl = assessmentForm ? assessmentForm.dataset.locationCatalog : '';
+    var countryCatalog = [];
+    var catalogPromise = null;
 
     function normalize(value) {
       return String(value || '').trim().toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -376,6 +360,13 @@ $country_catalog = is_array($country_catalog) ? $country_catalog : [];
       var wanted = normalize(value);
       return Array.prototype.find.call(list.options, function (option) {
         return normalize(option.value) === wanted;
+      }) || null;
+    }
+
+    function findCountryByCode(code) {
+      var wanted = String(code || '').toUpperCase();
+      return countryCatalog.find(function (country) {
+        return String(country.code || '').toUpperCase() === wanted;
       }) || null;
     }
 
@@ -401,50 +392,157 @@ $country_catalog = is_array($country_catalog) ? $country_catalog : [];
       list.replaceChildren(fragment);
     }
 
-    function abortLookup(input) {
-      if (!input) return;
-      var previousController = requestControllers.get(input);
-      if (previousController) previousController.abort();
-      requestControllers.delete(input);
+    function firstText(object, keys) {
+      for (var i = 0; i < keys.length; i += 1) {
+        var value = object && object[keys[i]];
+        if ((typeof value === 'string' || typeof value === 'number') && String(value).trim()) {
+          return String(value).trim();
+        }
+      }
+      return '';
     }
 
-    function loadSuggestions(type, countryCode, stateCode, input, cache, cacheKey, listId) {
-      abortLookup(input);
-      if (cache.has(cacheKey)) {
-        fillSuggestions(listId, cache.get(cacheKey), type === 'states');
-        return Promise.resolve(cache.get(cacheKey));
+    function objectValues(value) {
+      if (Array.isArray(value)) return value;
+      if (!value || typeof value !== 'object') return [];
+      return Object.keys(value).map(function (key) {
+        var item = value[key];
+        if (item && typeof item === 'object' && !Array.isArray(item)) {
+          if (!item.name && !item.state_name && !item.city_name) item.name = key;
+          return item;
+        }
+        return { name: key, cities: item };
+      });
+    }
+
+    function normalizeCountryCatalog(data) {
+      var nested = data && (data.countries || data.data);
+      var rawCountries = Array.isArray(data) ? data
+        : Array.isArray(nested) ? nested
+        : nested && typeof nested === 'object' ? Object.keys(nested).map(function (key) {
+          var item = nested[key];
+          if (!item || typeof item !== 'object') return null;
+          var keyIsCode = /^[A-Z]{2,3}$/.test(key);
+          if (Array.isArray(item)) return { name: keyIsCode ? '' : key, code: keyIsCode ? key : '', states: item };
+          var countryName = firstText(item, ['name', 'country_name', 'countryName', 'country', 'label']);
+          var countryCode = firstText(item, ['code', 'iso2', 'iso2_code', 'iso_2', 'country_code', 'countryCode', 'isoCode', 'iso3']);
+          return Object.assign({}, item, {
+            name: countryName || (keyIsCode ? '' : key),
+            code: countryCode || (keyIsCode ? key : '')
+          });
+        }).filter(Boolean)
+        : [];
+
+      if (!rawCountries.length && data && typeof data === 'object') {
+        rawCountries = Object.keys(data).map(function (key) {
+          var item = data[key];
+          if (Array.isArray(item)) {
+            var keyIsCode = /^[A-Z]{2,3}$/.test(key);
+            return { name: keyIsCode ? '' : key, code: keyIsCode ? key : '', states: item };
+          }
+          if (item && typeof item === 'object') {
+            if (!item.name && !item.country_name && !/^[A-Z]{2,3}$/.test(key)) item.name = key;
+            return item;
+          }
+          return null;
+        }).filter(Boolean);
       }
 
-      var controller = new AbortController();
-      requestControllers.set(input, controller);
+      return rawCountries.map(function (rawCountry, countryIndex) {
+        if (!rawCountry || typeof rawCountry !== 'object') return null;
+        var name = firstText(rawCountry, ['name', 'country_name', 'countryName', 'country', 'label']);
+        if (!name) return null;
+        var code = firstText(rawCountry, ['code', 'iso2', 'iso2_code', 'iso_2', 'country_code', 'countryCode', 'isoCode', 'iso3']);
+        if (!code) code = 'C' + countryIndex;
 
-      var url = new URL(locationEndpoint, window.location.href);
-      url.searchParams.set('type', type);
-      url.searchParams.set('country', countryCode);
-      if (stateCode) url.searchParams.set('state', stateCode);
+        var rawStates = objectValues(rawCountry.states || rawCountry.provinces || rawCountry.regions || []);
+        var states = rawStates.map(function (rawState, stateIndex) {
+          if (!rawState || typeof rawState !== 'object') return null;
+          var stateName = firstText(rawState, ['name', 'state_name', 'stateName', 'province', 'region', 'state', 'label']);
+          if (!stateName) return null;
+          var stateCode = firstText(rawState, ['code', 'state_code', 'stateCode', 'province_code', 'isoCode']) || 'S' + stateIndex;
+          var rawCities = rawState.cities || rawState.city || rawState.towns || [];
+          if (!Array.isArray(rawCities)) rawCities = objectValues(rawCities);
+          var cities = rawCities.map(function (city) {
+            if (typeof city === 'string' || typeof city === 'number') return String(city).trim();
+            return firstText(city, ['name', 'city_name', 'cityName', 'city', 'label']);
+          }).filter(Boolean);
+          return { name: stateName, code: stateCode, cities: cities };
+        }).filter(Boolean);
 
-      return fetch(url.toString(), {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' },
-        signal: controller.signal
+        return {
+          name: name,
+          code: code,
+          phoneCode: firstText(rawCountry, ['phoneCode', 'phone_code', 'phonecode', 'dial_code', 'calling_code', 'callingCode']),
+          states: states
+        };
+      }).filter(Boolean);
+    }
+
+    function fetchJson(url) {
+      return fetch(new URL(url, window.location.href).toString(), {
+        headers: { 'Accept': 'application/json' }
       }).then(function (response) {
-        if (!response.ok) throw new Error('Location lookup failed.');
+        if (!response.ok) throw new Error('Location data request failed.');
         return response.json();
-      }).then(function (result) {
-        var items = Array.isArray(result.items) ? result.items : [];
-        cache.set(cacheKey, items);
-        if (requestControllers.get(input) === controller) {
-          fillSuggestions(listId, items, type === 'states');
-        }
-        return items;
-      }).catch(function (error) {
-        if (error.name !== 'AbortError') {
-          console.warn('Could not load location suggestions:', error);
-          var status = document.getElementById('location-status');
-          if (status) status.textContent = 'Location suggestions could not be loaded. You can still type your location manually.';
-        }
-        return [];
       });
+    }
+
+    function populateCountryOptions() {
+      var fragment = document.createDocumentFragment();
+      countryCatalog.forEach(function (country) {
+        var option = document.createElement('option');
+        option.value = country.name;
+        var phoneCode = String(country.phoneCode || '').replace(/^\+/, '');
+        option.label = country.name + (phoneCode ? ' (+' + phoneCode + ')' : '');
+        option.dataset.code = country.code;
+        option.dataset.phoneCode = country.phoneCode || '';
+        fragment.appendChild(option);
+      });
+      countryOptions.replaceChildren(fragment);
+    }
+
+    function loadCountryCatalog() {
+      if (catalogPromise) return catalogPromise;
+      if (!locationCatalogUrl || !countryOptions) return Promise.resolve([]);
+
+      catalogPromise = fetchJson(locationCatalogUrl)
+        .then(function (data) {
+          var catalog = normalizeCountryCatalog(data);
+          var hasStates = catalog.some(function (country) { return country.states.length > 0; });
+          var hasCities = catalog.some(function (country) {
+            return country.states.some(function (state) { return state.cities.length > 0; });
+          });
+          if (!catalog.length || !hasStates || !hasCities) throw new Error('Combined location file has an unsupported structure.');
+          return catalog;
+        })
+        .catch(function (primaryError) {
+          console.warn('Could not use the combined location file; trying bundled data:', primaryError);
+          return Promise.all([
+            fetchJson(assessmentForm.dataset.fallbackCountries),
+            fetchJson(assessmentForm.dataset.fallbackLocations)
+          ]).then(function (results) {
+            var countries = Array.isArray(results[0]) ? results[0] : [];
+            var locations = results[1] && typeof results[1] === 'object' ? results[1] : {};
+            return normalizeCountryCatalog(countries.map(function (country) {
+              return Object.assign({}, country, { states: locations[country.code] || [] });
+            }));
+          });
+        })
+        .then(function (catalog) {
+          if (!catalog.length) throw new Error('No country data was found.');
+          countryCatalog = catalog;
+          populateCountryOptions();
+          return countryCatalog;
+        })
+        .catch(function (error) {
+          console.warn('Could not load country and location data:', error);
+          var status = document.getElementById('location-status');
+          if (status) status.textContent = 'Location suggestions could not be loaded. You can still enter locations manually.';
+          countryCatalog = [];
+          return countryCatalog;
+        });
+      return catalogPromise;
     }
 
     function handleCountryInput(countryInput) {
@@ -456,8 +554,6 @@ $country_catalog = is_array($country_catalog) ? $country_catalog : [];
       var cityInput = document.getElementById(countryInput.dataset.city);
       if (!stateInput || !cityInput) return;
 
-      abortLookup(stateInput);
-      abortLookup(cityInput);
       stateInput.value = '';
       cityInput.value = '';
       stateInput.dataset.locationStateValue = '';
@@ -466,24 +562,26 @@ $country_catalog = is_array($country_catalog) ? $country_catalog : [];
       var status = document.getElementById('location-status');
       if (status) status.textContent = '';
 
-      var countryOption = findSuggestion(countryOptions, countryName);
-      if (!countryOption || !countryOption.dataset.code || !locationEndpoint) return;
+      loadCountryCatalog().then(function () {
+        if (countryInput.value.trim() !== countryName) return;
+        var countryOption = findSuggestion(countryOptions, countryName);
+        if (!countryOption || !countryOption.dataset.code) return;
 
-      var countryCode = countryOption.dataset.code;
-      if (countryInput.id === 'address_country') {
-        var phoneInput = document.getElementById('phone');
-        var callingCode = (countryOption.dataset.phoneCode || '').replace(/\D/g, '');
-        if (phoneInput && !phoneInput.value && callingCode) phoneInput.value = '+' + callingCode + ' ';
-      }
-      stateInput.dataset.countryCode = countryCode;
-      cityInput.dataset.countryCode = countryCode;
-      var stateListId = stateInput.dataset.options;
-      var key = countryCode;
-
-      loadSuggestions('states', countryCode, '', stateInput, stateCache, key, stateListId).then(function (items) {
-        var status = document.getElementById('location-status');
-        if (status && countryInput.value.trim() === countryName && items.length) {
-          status.textContent = items.length + ' states or provinces available for ' + countryName + '.';
+        var countryCode = countryOption.dataset.code;
+        var country = findCountryByCode(countryCode);
+        var states = country && Array.isArray(country.states) ? country.states : [];
+        if (countryInput.id === 'address_country') {
+          var phoneInput = document.getElementById('phone');
+          var callingCode = (countryOption.dataset.phoneCode || '').replace(/\D/g, '');
+          if (phoneInput && !phoneInput.value && callingCode) phoneInput.value = '+' + callingCode + ' ';
+        }
+        stateInput.dataset.countryCode = countryCode;
+        cityInput.dataset.countryCode = countryCode;
+        fillSuggestions(stateInput.dataset.options, states, true);
+        if (status) {
+          status.textContent = states.length
+            ? states.length + ' states or provinces available for ' + countryName + '.'
+            : 'No state or province suggestions are available for ' + countryName + '. Enter the applicable location manually.';
         }
       });
     }
@@ -495,7 +593,6 @@ $country_catalog = is_array($country_catalog) ? $country_catalog : [];
 
       var cityInput = document.getElementById(stateInput.dataset.city);
       if (!cityInput) return;
-      abortLookup(cityInput);
       cityInput.value = '';
       clearSuggestions(cityInput.dataset.options);
 
@@ -505,17 +602,21 @@ $country_catalog = is_array($country_catalog) ? $country_catalog : [];
       var stateOption = findSuggestion(stateList, stateName);
       if (!countryOption || !countryOption.dataset.code || !stateOption || !stateOption.dataset.code) return;
 
-      var countryCode = countryOption.dataset.code;
-      var stateCode = stateOption.dataset.code;
-      cityInput.dataset.countryCode = countryCode;
-      loadSuggestions('cities', countryCode, stateCode, cityInput, cityCache, countryCode + ':' + stateCode, cityInput.dataset.options).then(function (items) {
-        var status = document.getElementById('location-status');
-        if (status && stateInput.value.trim() === stateName) {
-          status.textContent = items.length + ' cities available in ' + stateName + '.';
-        }
-      });
+      var country = findCountryByCode(countryOption.dataset.code);
+      var state = country && Array.isArray(country.states)
+        ? country.states.find(function (item) { return String(item.code || '') === stateOption.dataset.code; })
+        : null;
+      var cities = state && Array.isArray(state.cities) ? state.cities : [];
+      fillSuggestions(cityInput.dataset.options, cities, false);
+      var status = document.getElementById('location-status');
+      if (status) {
+        status.textContent = cities.length
+          ? cities.length + ' cities available in ' + stateName + '.'
+          : 'No city suggestions are available for ' + stateName + '. Enter the city manually.';
+      }
     }
 
+    loadCountryCatalog();
     document.querySelectorAll('.location-country').forEach(function (input) {
       input.addEventListener('input', function () { handleCountryInput(input); });
       input.addEventListener('change', function () { handleCountryInput(input); });
@@ -527,27 +628,48 @@ $country_catalog = is_array($country_catalog) ? $country_catalog : [];
       input.addEventListener('change', function () { handleStateInput(input); });
     });
 
-    // Add/remove dependent children without leaving duplicate field IDs.
-    var addChildButton = document.getElementById('add-child');
+    // Show exactly one child-details card per dependent-child count.
+    var childCountInput = document.getElementById('dependent_children');
+    var childrenFields = document.getElementById('children-fields');
     var childrenContainer = document.getElementById('children-container');
-    if (addChildButton && childrenContainer) {
-      var childIndex = 1;
-      addChildButton.addEventListener('click', function () {
+    if (childCountInput && childrenFields && childrenContainer) {
+      function createChildFields(index) {
         var row = document.createElement('div');
-        row.className = 'child-row row g-2 mb-2 align-items-end';
-        row.setAttribute('data-index', childIndex);
-        row.innerHTML = '<div class="col-md-4"><input type="text" name="children[' + childIndex + '][name]" class="form-control" placeholder="Child Name"></div>' +
-          '<div class="col-md-3"><input type="number" name="children[' + childIndex + '][age]" class="form-control" placeholder="Age" min="0" max="120"></div>' +
-          '<div class="col-md-3"><input type="search" name="children[' + childIndex + '][nationality]" class="form-control" list="country-options" placeholder="Nationality / Country"></div>' +
-          '<div class="col-md-2"><button type="button" class="btn btn-sm btn-outline-danger w-100 remove-child">Remove</button></div>';
-        childrenContainer.appendChild(row);
-        childIndex += 1;
-      });
+        row.className = 'child-row border rounded-3 p-3 mb-3';
+        row.setAttribute('data-index', index);
+        row.innerHTML = '<h5 class="h6 mb-3">Child ' + (index + 1) + '</h5>' +
+          '<div class="row g-3">' +
+            '<div class="col-md-5"><label for="child-' + index + '-name" class="form-label">Full Name <span class="text-danger">*</span></label><input type="text" id="child-' + index + '-name" name="children[' + index + '][name]" class="form-control" autocomplete="off" required></div>' +
+            '<div class="col-md-3"><label for="child-' + index + '-age" class="form-label">Age <span class="text-danger">*</span></label><input type="number" id="child-' + index + '-age" name="children[' + index + '][age]" class="form-control" min="0" max="120" step="1" required></div>' +
+            '<div class="col-md-4"><label for="child-' + index + '-nationality" class="form-label">Nationality / Country <span class="text-danger">*</span></label><input type="search" id="child-' + index + '-nationality" name="children[' + index + '][nationality]" class="form-control" list="country-options" autocomplete="off" required></div>' +
+          '</div>';
+        return row;
+      }
 
-      childrenContainer.addEventListener('click', function (event) {
-        var removeButton = event.target.closest('.remove-child');
-        if (removeButton) removeButton.closest('.child-row').remove();
-      });
+      function renderChildFields() {
+        var requestedCount = Number(childCountInput.value);
+        var count = Number.isInteger(requestedCount) ? Math.max(0, Math.min(10, requestedCount)) : 0;
+        childrenFields.hidden = count === 0;
+
+        var rows = childrenContainer.querySelectorAll('.child-row');
+        while (rows.length > count) {
+          rows[rows.length - 1].remove();
+          rows = childrenContainer.querySelectorAll('.child-row');
+        }
+        while (rows.length < count) {
+          childrenContainer.appendChild(createChildFields(rows.length));
+          rows = childrenContainer.querySelectorAll('.child-row');
+        }
+      }
+
+      childCountInput.addEventListener('input', renderChildFields);
+      childCountInput.addEventListener('change', renderChildFields);
+      if (assessmentForm) {
+        assessmentForm.addEventListener('reset', function () {
+          window.setTimeout(renderChildFields, 0);
+        });
+      }
+      renderChildFields();
     }
   })();
 </script>

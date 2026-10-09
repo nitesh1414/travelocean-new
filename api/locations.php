@@ -32,17 +32,32 @@ if ($type === 'cities' && ($stateCode === '' || !preg_match('/^[A-Z0-9.-]{1,12}$
     location_response(400, ['items' => [], 'message' => 'A valid state or province code is required.']);
 }
 
-$dataFile = __DIR__ . '/../assets/data/locations.json';
-if (!is_file($dataFile) || !is_readable($dataFile)) {
-    location_response(503, ['items' => [], 'message' => 'Location suggestions are temporarily unavailable.']);
+$countryStates = null;
+$dataFile = __DIR__ . '/../assets/data/countries_states_cities.json';
+if (is_file($dataFile) && is_readable($dataFile)) {
+    $countries = json_decode(file_get_contents($dataFile), true);
+    if (is_array($countries)) {
+        foreach ($countries as $country) {
+            if (strtoupper((string)($country['code'] ?? '')) === $countryCode) {
+                $countryStates = $country['states'] ?? [];
+                break;
+            }
+        }
+    }
 }
 
-$locations = json_decode(file_get_contents($dataFile), true);
-if (!is_array($locations)) {
-    location_response(503, ['items' => [], 'message' => 'Location suggestions are temporarily unavailable.']);
+// Local fallback remains useful in development where the production catalog may not be present.
+if (!is_array($countryStates)) {
+    $fallbackFile = __DIR__ . '/../assets/data/locations.json';
+    if (!is_file($fallbackFile) || !is_readable($fallbackFile)) {
+        location_response(503, ['items' => [], 'message' => 'Location suggestions are temporarily unavailable.']);
+    }
+    $locations = json_decode(file_get_contents($fallbackFile), true);
+    if (!is_array($locations)) {
+        location_response(503, ['items' => [], 'message' => 'Location suggestions are temporarily unavailable.']);
+    }
+    $countryStates = $locations[$countryCode] ?? [];
 }
-
-$countryStates = $locations[$countryCode] ?? null;
 if (!is_array($countryStates)) {
     location_response(200, ['items' => []]);
 }

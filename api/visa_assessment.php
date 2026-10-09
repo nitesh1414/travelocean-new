@@ -24,9 +24,14 @@ $requiredFields = [
     'dob' => 'date of birth',
     'gender' => 'gender',
     'birthplace_country' => 'country of birth',
+    'birthplace_state' => 'state or province of birth',
+    'birthplace_city' => 'city of birth',
     'nationality' => 'nationality or citizenship',
     'marital_status' => 'marital status',
+    'dependent_children' => 'number of dependent children',
     'address_country' => 'current country',
+    'address_state' => 'current state or province',
+    'address_city' => 'current city',
     'phone' => 'phone number with country code',
     'target_countries' => 'target destination country',
     'visa_category' => 'visa category',
@@ -51,6 +56,34 @@ if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
 foreach ($requiredFields as $field => $label) {
     if (visa_assessment_post_value($field) === '') {
         echo json_encode(['success' => false, 'message' => 'Please provide your ' . $label . '.']);
+        exit;
+    }
+}
+
+$dependentChildrenValue = visa_assessment_post_value('dependent_children');
+if (!preg_match('/^\\d+$/', $dependentChildrenValue) || (int)$dependentChildrenValue > 10) {
+    echo json_encode(['success' => false, 'message' => 'Enter a whole number of dependent children between 0 and 10.']);
+    exit;
+}
+$dependentChildrenCount = (int)$dependentChildrenValue;
+$submittedChildren = $_POST['children'] ?? [];
+if (!is_array($submittedChildren) || count($submittedChildren) !== $dependentChildrenCount) {
+    echo json_encode(['success' => false, 'message' => 'Please provide details for each dependent child matching the number entered.']);
+    exit;
+}
+for ($childIndex = 0; $childIndex < $dependentChildrenCount; $childIndex++) {
+    $child = $submittedChildren[$childIndex] ?? null;
+    if (!is_array($child)) {
+        echo json_encode(['success' => false, 'message' => 'Please provide details for each dependent child matching the number entered.']);
+        exit;
+    }
+    $childName = $child['name'] ?? '';
+    $childAge = $child['age'] ?? '';
+    $childNationality = $child['nationality'] ?? '';
+    if (!is_scalar($childName) || trim((string)$childName) === ''
+        || !is_scalar($childAge) || !preg_match('/^\\d{1,3}$/', trim((string)$childAge)) || (int)$childAge > 120
+        || !is_scalar($childNationality) || trim((string)$childNationality) === '') {
+        echo json_encode(['success' => false, 'message' => 'Please enter the name, age, and nationality for each dependent child.']);
         exit;
     }
 }
