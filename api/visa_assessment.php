@@ -101,6 +101,23 @@ if (visa_assessment_post_value('family_target_country') === 'Yes' && visa_assess
 
 try {
     $id = save_visa_assessment($_POST);
+
+    // The database insert is authoritative: notification failure must not make
+    // the applicant resubmit and create a duplicate assessment.
+    try {
+        require_once __DIR__ . '/../includes/visa_assessment_mail.php';
+        $assessmentForEmail = get_visa_assessment_by_id((int)$id);
+        if (!is_array($assessmentForEmail)) {
+            $assessmentForEmail = $_POST;
+            $assessmentForEmail['id'] = (int)$id;
+        }
+        if (!send_visa_assessment_notification($assessmentForEmail)) {
+            error_log('[visa_assessment] Email notification returned false for assessment #' . (int)$id);
+        }
+    } catch (Throwable $mailError) {
+        error_log('[visa_assessment] Email notification failed for assessment #' . (int)$id . ': ' . $mailError->getMessage());
+    }
+
     echo json_encode([
         'success' => true,
         'message' => 'Your Free Visa Assessment has been submitted successfully. Our consultants will review it and contact you shortly.',

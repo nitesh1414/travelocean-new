@@ -118,9 +118,16 @@ reference data covers 250 countries/territories, 4,963 states/provinces, and
 148,038 city records; users can also type locations not listed. Data attribution
 and license details are in `assets/data/LOCATION-DATA-LICENSE.txt`.
 
+Visa assessment notifications are sent after the assessment is inserted. SMTP
+recipient, host, port, encryption, sender, and credentials are configured in
+Admin → Settings; if SMTP host is blank, PHPMailer uses the server's PHP mail
+transport. SMTP passwords are not shown again after saving. PHPMailer 6.10.0 is
+included under `includes/PHPMailer/` with its LGPL-2.1 license.
+
 - **Hero slider** with autoplay & fade animation
 - **AJAX contact form** with success/error toasts
 - **Visa assessment form** with searchable country, state/province, and city suggestions
+- **Visa assessment email notifications** after database save, configurable through Admin → Settings (recipient and SMTP transport)
 - **Newsletter** subscription with validation
 - **Animated counters** on scroll
 - **Scroll-reveal animations** (AOS library)
