@@ -133,7 +133,7 @@ function visa_assessment_email_body(array $assessment)
     return implode("\r\n", $lines);
 }
 
-function send_visa_assessment_notification(array $assessment)
+function visa_assessment_configured_mailer()
 {
     $recipient = trim((string)setting('visa_assessment_notification_email', 'info@traveloceans.eu'));
     if ($recipient === '') $recipient = 'info@traveloceans.eu';
@@ -165,21 +165,11 @@ function send_visa_assessment_notification(array $assessment)
     $mailer->Encoding = 'base64';
     $mailer->setFrom($fromEmail, $fromName);
     $mailer->addAddress($recipient);
-
-    $replyEmail = trim((string)($assessment['email'] ?? ''));
-    if (filter_var($replyEmail, FILTER_VALIDATE_EMAIL)) {
-        $replyName = trim((string)($assessment['full_legal_name'] ?? ''));
-        $replyName = preg_replace('/[\r\n]+/', ' ', $replyName);
-        $mailer->addReplyTo($replyEmail, $replyName);
-    }
-
-    $mailer->Subject = 'New Visa Assessment Submission #' . (int)($assessment['id'] ?? 0);
-    $mailer->Body = visa_assessment_email_body($assessment);
     $mailer->isHTML(false);
     $mailer->Timeout = 20;
 
     if ($host === '') {
-        // Fall back to the host's configured PHP mail transport when SMTP is not set.
+        // PHP mail() depends on a working mail transfer agent on the web server.
         $mailer->isMail();
     } else {
         $encryption = strtolower(trim((string)setting('smtp_encryption', 'tls')));
@@ -211,5 +201,45 @@ function send_visa_assessment_notification(array $assessment)
         }
     }
 
-    return $mailer->send();
+    return $mailer;
+}
+
+function visa_assessment_send_mailer($mailer)
+{
+    $sent = $mailer->send();
+    if (!$sent) {
+        $error = trim((string)$mailer->ErrorInfo);
+        throw new RuntimeException($error !== '' ? $error : 'The configured email transport rejected the message.');
+    }
+    return true;
+}
+
+function send_visa_assessment_notification(array $assessment)
+{
+    $mailer = visa_assessment_configured_mailer();
+    $replyEmail = trim((string)($assessment['email'] ?? ''));
+    if (filter_var($replyEmail, FILTER_VALIDATE_EMAIL)) {
+        $replyName = trim((string)($assessment['full_legal_name'] ?? ''));
+        $replyName = preg_replace('/[\r\n]+/', ' ', $replyName);
+        $mailer->addReplyTo($replyEmail, $replyName);
+    }
+
+    $mailer->Subject = 'New Visa Assessment Submission #' . (int)($assessment['id'] ?? 0);
+    $mailer->Body = visa_assessment_email_body($assessment);
+    return visa_assessment_send_mailer($mailer);
+}
+
+function send_visa_assessment_test_email()
+{
+    $mailer = visa_assessment_configured_mailer();
+    $mailer->Subject = '[Travel Oceans] Email delivery test';
+    $mailer->Body = implode("\r\n", [
+        'This is a test message from the Travel Oceans visa assessment email settings.',
+        'It contains no applicant information.',
+        'Sent at: ' . date('Y-m-d H:i:s T'),
+        '',
+        'A successful test confirms the configured mail transport accepted the message.',
+        'It does not guarantee inbox delivery. Check spam, quarantine, and your sender-domain email authentication if it is missing.',
+    ]);
+    return visa_assessment_send_mailer($mailer);
 }

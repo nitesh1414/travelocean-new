@@ -120,9 +120,13 @@ and license details are in `assets/data/LOCATION-DATA-LICENSE.txt`.
 
 Visa assessment notifications are sent after the assessment is inserted. SMTP
 recipient, host, port, encryption, sender, and credentials are configured in
-Admin → Settings; if SMTP host is blank, PHPMailer uses the server's PHP mail
-transport. SMTP passwords are not shown again after saving. PHPMailer 6.10.0 is
-included under `includes/PHPMailer/` with its LGPL-2.1 license.
+Admin → Settings. SMTP is recommended; a blank SMTP host falls back to PHP
+`mail()`, which depends on the web host's mail server being configured. Use
+**Send Test Email** on the settings page to check transport errors. A successful
+test means the transport accepted the message, not that it reached the inbox;
+check spam/quarantine and sender-domain email authentication if it is missing.
+SMTP passwords are not shown again after saving. PHPMailer 6.10.0 is included
+under `includes/PHPMailer/` with its LGPL-2.1 license.
 
 - **Hero slider** with autoplay & fade animation
 - **AJAX contact form** with success/error toasts

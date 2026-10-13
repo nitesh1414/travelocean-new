@@ -4,6 +4,11 @@ require_admin();
 
 $settings_error = '';
 $pw_msg = '';
+$mail_test_result = null;
+if (isset($_SESSION['visa_assessment_test_result']) && is_array($_SESSION['visa_assessment_test_result'])) {
+    $mail_test_result = $_SESSION['visa_assessment_test_result'];
+    unset($_SESSION['visa_assessment_test_result']);
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $csrfToken = isset($_POST['csrf_token']) && is_string($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
@@ -29,6 +34,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: settings.php');
             exit;
         }
+    } elseif (isset($_POST['send_test_email'])) {
+        require_once __DIR__ . '/../includes/visa_assessment_mail.php';
+        $recipient = trim((string)setting('visa_assessment_notification_email', 'info@traveloceans.eu'));
+        if ($recipient === '') $recipient = 'info@traveloceans.eu';
+        $transport = trim((string)setting('smtp_host')) === '' ? 'PHP mail()' : 'SMTP';
+
+        try {
+            send_visa_assessment_test_email();
+            $mailTestMessage = 'The test message was accepted by the configured ' . $transport . ' transport for ' . $recipient . '. This confirms handoff to the mail transport, not final inbox delivery; check Spam/Junk or quarantine if it is missing.';
+            $_SESSION['visa_assessment_test_result'] = ['type' => 'success', 'message' => $mailTestMessage];
+        } catch (Throwable $testError) {
+            $detail = trim($testError->getMessage());
+            $savedPassword = (string)setting('smtp_password');
+            if ($savedPassword !== '') $detail = str_replace($savedPassword, '[redacted]', $detail);
+            $detail = preg_replace('/[\\r\\n]+/', ' ', $detail);
+            if ($detail === '') $detail = 'The mail transport returned an unspecified error.';
+            if (strlen($detail) > 1000) $detail = substr($detail, 0, 1000) . '…';
+            $_SESSION['visa_assessment_test_result'] = ['type' => 'danger', 'message' => 'The test message failed: ' . $detail];
+        }
+
+        header('Location: settings.php');
+        exit;
     } elseif (isset($_POST['save_settings'])) {
         $readText = static function ($key, $default = '') {
             $value = $_POST[$key] ?? $default;
@@ -108,6 +135,7 @@ if ($smtpFromEmailValue === '') $smtpFromEmailValue = $formSetting('site_email',
 $smtpPortValue = $formSetting('smtp_port', '587');
 if ($smtpPortValue === '') $smtpPortValue = '587';
 $smtpEncryptionValue = $formSetting('smtp_encryption', 'tls');
+$mailTransport = trim((string)setting('smtp_host')) === '' ? 'PHP mail() fallback' : 'SMTP';
 
 ob_start();
 ?>
@@ -115,6 +143,7 @@ ob_start();
   <div class="col-lg-8">
     <div class="form-card">
       <h4 class="mb-3"><i class="bi bi-sliders me-2"></i> Site Settings</h4>
+      <?php if (is_array($mail_test_result)): ?><div class="alert alert-<?= ($mail_test_result['type'] ?? '') === 'success' ? 'success' : 'danger' ?>" role="alert"><?= e($mail_test_result['message'] ?? '') ?></div><?php endif; ?>
       <?php if ($settings_error !== ''): ?><div class="alert alert-danger"><?= e($settings_error) ?></div><?php endif; ?>
       <form method="post">
         <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
@@ -142,7 +171,7 @@ ob_start();
           <div class="col-12"><label class="form-label">Meta Keywords</label><input type="text" name="meta_keywords" class="form-control" value="<?= e(setting('meta_keywords')) ?>"></div>
           <div class="col-12"><label class="form-label">Important Notice (footer)</label><textarea name="important_notice" rows="4" class="form-control"><?= e(setting('important_notice')) ?></textarea></div>
 
-          <div class="col-12"><hr class="my-2"><h5 class="mb-1"><i class="bi bi-envelope-paper me-2"></i>Visa Assessment Email Notifications</h5><p class="form-text mb-0">New assessments are emailed after they are saved. Configure SMTP below; if SMTP host is blank, the server's PHP mail transport is used.</p></div>
+          <div class="col-12"><hr class="my-2"><h5 class="mb-1"><i class="bi bi-envelope-paper me-2"></i>Visa Assessment Email Notifications</h5><p class="form-text mb-0">New assessments are emailed after they are saved. SMTP is recommended. If SMTP host is blank, delivery depends on PHP mail() and a mail server configured by your web host. Save your settings, then use Send Test Email to diagnose the transport.</p></div>
           <div class="col-md-6"><label class="form-label">Notification recipient</label><input type="email" name="visa_assessment_notification_email" class="form-control" value="<?= e($formSetting('visa_assessment_notification_email', 'info@traveloceans.eu')) ?>" required><div class="form-text">Defaults to info@traveloceans.eu.</div></div>
           <div class="col-md-6"><label class="form-label">SMTP Host</label><input type="text" name="smtp_host" class="form-control" value="<?= e($formSetting('smtp_host')) ?>" autocomplete="off" placeholder="smtp.example.com"></div>
           <div class="col-md-4"><label class="form-label">SMTP Port</label><input type="number" name="smtp_port" class="form-control" min="1" max="65535" value="<?= e($smtpPortValue) ?>"></div>
@@ -168,6 +197,15 @@ ob_start();
         <div class="mb-3"><label class="form-label">New Password</label><input type="password" name="new_password" class="form-control" required></div>
         <div class="mb-3"><label class="form-label">Confirm New Password</label><input type="password" name="confirm_password" class="form-control" required></div>
         <button class="btn btn-primary w-100" type="submit"><i class="bi bi-key me-1"></i> Update Password</button>
+      </form>
+    </div>
+    <div class="form-card mt-3">
+      <h5 class="mb-2"><i class="bi bi-send-check me-2"></i> Test Email Delivery</h5>
+      <p class="small text-muted">Current transport: <strong><?= e($mailTransport) ?></strong>. This test uses the saved notification recipient and saved mail settings; save changes first. It contains no applicant data.</p>
+      <form method="post">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+        <input type="hidden" name="send_test_email" value="1">
+        <button class="btn btn-outline-primary w-100" type="submit"><i class="bi bi-envelope-check me-1"></i> Send Test Email</button>
       </form>
     </div>
     <div class="form-card mt-3">
