@@ -130,8 +130,20 @@ $formSetting = static function ($key, $default = '') {
     }
     return (string)setting($key, $default);
 };
+$smtpUsernameValue = $formSetting('smtp_username');
 $smtpFromEmailValue = $formSetting('smtp_from_email');
-if ($smtpFromEmailValue === '') $smtpFromEmailValue = $formSetting('site_email', 'info@traveloceans.eu');
+if ($smtpFromEmailValue === '') {
+    $smtpFromEmailValue = filter_var($smtpUsernameValue, FILTER_VALIDATE_EMAIL)
+        ? $smtpUsernameValue
+        : $formSetting('site_email', 'info@traveloceans.eu');
+}
+$smtpFromWarning = '';
+if (trim((string)$formSetting('smtp_host')) !== ''
+    && filter_var($smtpUsernameValue, FILTER_VALIDATE_EMAIL)
+    && filter_var($smtpFromEmailValue, FILTER_VALIDATE_EMAIL)
+    && strcasecmp($smtpUsernameValue, $smtpFromEmailValue) !== 0) {
+    $smtpFromWarning = 'SMTP login is ' . $smtpUsernameValue . ' but the From address is ' . $smtpFromEmailValue . '. Many providers reject this; use the SMTP login or a sender alias verified by your mail provider.';
+}
 $smtpPortValue = $formSetting('smtp_port', '587');
 if ($smtpPortValue === '') $smtpPortValue = '587';
 $smtpEncryptionValue = $formSetting('smtp_encryption', 'tls');
@@ -176,7 +188,7 @@ ob_start();
           <div class="col-md-6"><label class="form-label">SMTP Host</label><input type="text" name="smtp_host" class="form-control" value="<?= e($formSetting('smtp_host')) ?>" autocomplete="off" placeholder="smtp.example.com"></div>
           <div class="col-md-4"><label class="form-label">SMTP Port</label><input type="number" name="smtp_port" class="form-control" min="1" max="65535" value="<?= e($smtpPortValue) ?>"></div>
           <div class="col-md-4"><label class="form-label">Connection Security</label><select name="smtp_encryption" class="form-select"><option value="tls" <?= $smtpEncryptionValue === 'tls' ? 'selected' : '' ?>>STARTTLS (recommended)</option><option value="ssl" <?= $smtpEncryptionValue === 'ssl' ? 'selected' : '' ?>>SMTPS / SSL</option><option value="none" <?= $smtpEncryptionValue === 'none' ? 'selected' : '' ?>>None (not recommended)</option></select></div>
-          <div class="col-md-4"><label class="form-label">SMTP From Email</label><input type="email" name="smtp_from_email" class="form-control" value="<?= e($smtpFromEmailValue) ?>" placeholder="Uses site email if blank"></div>
+          <div class="col-md-4"><label class="form-label">SMTP From Email</label><input type="email" name="smtp_from_email" class="form-control" value="<?= e($smtpFromEmailValue) ?>" placeholder="Uses SMTP username or site email"><div class="form-text">Use the SMTP username or an approved sender alias.</div><?php if ($smtpFromWarning !== ''): ?><div class="small text-warning mt-1"><?= e($smtpFromWarning) ?></div><?php endif; ?></div>
           <div class="col-md-6"><label class="form-label">SMTP Username</label><input type="text" name="smtp_username" class="form-control" value="<?= e($formSetting('smtp_username')) ?>" autocomplete="username"></div>
           <div class="col-md-6"><label class="form-label">SMTP Password</label><input type="password" name="smtp_password" class="form-control" value="" autocomplete="new-password" placeholder="<?= $smtpPasswordConfigured ? 'Password saved — leave blank to keep it' : 'Not configured' ?>"><div class="form-text">The saved password is never displayed. Leave blank to keep the existing password.</div></div>
           <div class="col-md-6"><label class="form-label">SMTP From Name</label><input type="text" name="smtp_from_name" class="form-control" value="<?= e($formSetting('smtp_from_name', setting('site_name', 'Travel Oceans'))) ?>"></div>

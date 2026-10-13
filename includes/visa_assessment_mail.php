@@ -150,7 +150,12 @@ function visa_assessment_configured_mailer()
 
     $fromEmail = trim((string)setting('smtp_from_email'));
     if ($fromEmail === '' || !filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
-        $fromEmail = trim((string)setting('site_email'));
+        $smtpUsernameForFrom = trim((string)setting('smtp_username'));
+        if (filter_var($smtpUsernameForFrom, FILTER_VALIDATE_EMAIL)) {
+            $fromEmail = $smtpUsernameForFrom;
+        } else {
+            $fromEmail = trim((string)setting('site_email'));
+        }
     }
     if ($fromEmail === '' || !filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
         $fromEmail = 'info@traveloceans.eu';
