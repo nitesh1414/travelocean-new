@@ -109,8 +109,13 @@ try {
         $assessmentForEmail = get_visa_assessment_by_id((int)$id);
         if (!is_array($assessmentForEmail)) {
             $assessmentForEmail = $_POST;
-            $assessmentForEmail['id'] = (int)$id;
         }
+        // The validated submission is the fallback if an older/unusual schema
+        // returns a row without the applicant's email column populated.
+        if (empty($assessmentForEmail['email'])) {
+            $assessmentForEmail['email'] = $email;
+        }
+        $assessmentForEmail['id'] = (int)$id;
         if (!send_visa_assessment_notification($assessmentForEmail)) {
             error_log('[visa_assessment] Email notification returned false for assessment #' . (int)$id);
         }

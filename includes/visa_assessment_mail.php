@@ -11,10 +11,13 @@ function visa_assessment_email_body(array $assessment)
 {
     $id = isset($assessment['id']) ? (int)$assessment['id'] : 0;
     $submittedAt = trim((string)($assessment['created_at'] ?? ''));
+    $applicantEmail = $assessment['email'] ?? '';
+    $applicantEmail = is_scalar($applicantEmail) ? trim((string)$applicantEmail) : '';
     $lines = [
         'NEW VISA ASSESSMENT SUBMISSION',
         'Assessment ID: #' . $id,
         'Submitted: ' . ($submittedAt !== '' ? $submittedAt : date('Y-m-d H:i:s')),
+        'Applicant email / reply-to: ' . ($applicantEmail !== '' ? $applicantEmail : '(not provided)'),
         '',
     ];
 
@@ -36,7 +39,6 @@ function visa_assessment_email_body(array $assessment)
             'Current city' => 'address_city',
             'Current address' => 'address',
             'Phone' => 'phone',
-            'Email' => 'email',
         ],
         'Marital and Family Status' => [
             'Marital status' => 'marital_status',
