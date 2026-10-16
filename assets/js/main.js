@@ -70,6 +70,11 @@
   $(document).on('submit', '.ajax-form', function (e) {
     e.preventDefault();
     var $form = $(this);
+    if (!$form[0].checkValidity()) {
+      $form.addClass('was-validated');
+      $form[0].reportValidity();
+      return;
+    }
     var $btn = $form.find('button[type="submit"]');
     var oldText = $btn.html();
     $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Sending…');
@@ -83,6 +88,10 @@
         if (r.success) {
           $form.find('.form-message').html('<div class="alert alert-success">' + r.message + '</div>');
           $form[0].reset();
+          $form.removeClass('was-validated');
+          $form.find('.conditional-trigger').each(function () {
+            this.dispatchEvent(new Event('change', { bubbles: true }));
+          });
         } else {
           $form.find('.form-message').html('<div class="alert alert-danger">' + (r.message || 'Something went wrong.') + '</div>');
         }

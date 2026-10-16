@@ -70,12 +70,15 @@ traveloceans/
 │
 ├── api/
 │   ├── contact.php         # AJAX contact form handler
-│   └── newsletter.php      # AJAX newsletter handler
+│   ├── newsletter.php      # Newsletter handler
+│   ├── visa_assessment.php # Visa assessment submissions
+│   └── locations.php       # Country/state/city search data
 │
 ├── assets/
 │   ├── css/style.css       # Main stylesheet
 │   ├── js/main.js          # Main JavaScript (slider, AJAX, counters…)
-│   └── uploads/            # User-uploaded images
+│   ├── uploads/            # User-uploaded images
+│   └── data/               # Location reference data + attribution
 │
 ├── sql/schema.sql          # Database schema + seed data
 └── install.php             # One-time installer
@@ -83,7 +86,7 @@ traveloceans/
 
 ## 🗄 Database
 
-The schema includes 15 tables fully populated with seed content from traveloceans.eu:
+The schema includes 19 tables, with the public content tables seeded from traveloceans.eu:
 
 - `admins` — admin users
 - `settings` — site configuration (name, phones, social, important notice…)
@@ -95,19 +98,46 @@ The schema includes 15 tables fully populated with seed content from travelocean
 - `why_choose` — "Why Choose Travel Oceans" reasons
 - `documentation_categories` + `documentation_items` — Documentation services
 - `testimonials` — Client testimonials
-- `contact_messages` — Form submissions
+- `contact_messages` — Contact form submissions
+- `visa_assessments` — Confidential visa assessment submissions
 - `subscribers` — Newsletter subscribers
 - `pages` — Static CMS pages
 
+For a new installation, import `sql/visa_assessment.sql` into the database
+selected by `DB_NAME` in `includes/config.php`. For an existing `visa_assessments`
+table, back up the database and run `sql/upgrade_visa_assessments.sql` against
+that database; it adds only missing columns and preserves existing records.
+`CREATE TABLE IF NOT EXISTS` does
+not update a table that already exists.
+
 ## ✨ Interactive Features
+
+Visa assessment suggestions load from `/assets/data/countries_states_cities.json`.
+Bundled `countries.json` and `locations.json` provide a local fallback. The
+reference data covers 250 countries/territories, 4,963 states/provinces, and
+148,038 city records; users can also type locations not listed. Data attribution
+and license details are in `assets/data/LOCATION-DATA-LICENSE.txt`.
+
+Visa assessment notifications are sent after the assessment is inserted. SMTP
+recipient, host, port, encryption, sender, and credentials are configured in
+Admin → Settings. SMTP is recommended; a blank SMTP host falls back to PHP
+`mail()`, which depends on the web host's mail server being configured. Use
+**Send Test Email** on the settings page to check transport errors. A successful
+test means the transport accepted the message, not that it reached the inbox;
+check spam/quarantine and sender-domain email authentication if it is missing.
+SMTP passwords are not shown again after saving. PHPMailer 6.10.0 is included
+under `includes/PHPMailer/` with its LGPL-2.1 license.
 
 - **Hero slider** with autoplay & fade animation
 - **AJAX contact form** with success/error toasts
+- **Visa assessment form** with searchable country, state/province, and city suggestions
+- **Visa assessment email notifications** after database save, configurable through Admin → Settings (recipient and SMTP transport)
 - **Newsletter** subscription with validation
 - **Animated counters** on scroll
 - **Scroll-reveal animations** (AOS library)
 - **Sticky navigation** with active page indicator
 - **Mobile-friendly** hamburger menu
+- **Responsive dropdown navigation** with scrollable Services and Study Abroad menus
 - **Floating WhatsApp button** with pulse animation
 - **Back-to-top** button
 - **Bootstrap 5 + Bootstrap Icons** for polished UI

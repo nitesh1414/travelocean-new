@@ -1,0 +1,19 @@
+Location data attribution
+========================
+
+The bundled country, state/province, and city reference data in countries.json
+and locations.json was derived from country-state-city version 3.2.1.
+
+Package source: https://github.com/harpreetkhalsagtbit/country-state-city
+Underlying data source: https://github.com/dr5hn/countries-states-cities-database
+License distributed with the package: GNU General Public License v3.0 (GPL-3.0)
+
+The data has been normalized and grouped for the Travel Oceans visa-assessment
+form. Country labels and the JSON structure were adjusted; state and city names
+were sorted and duplicate city names within a state were removed. Location
+coverage is based on the upstream database and may not include every small
+village or locally recognized subdivision. Users can still type a value that
+is not listed in the suggestions.
+
+The upstream license text is available in the country-state-city package's
+LICENSE file and at https://www.gnu.org/licenses/gpl-3.0.txt.

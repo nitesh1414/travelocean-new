@@ -25,7 +25,7 @@ $page_title = $page_title ?? setting('site_name');
 <body>
 
   <!-- Top bar -->
-  <div class="top-bar bg-dark text-white py-2 d-none d-md-block">
+  <div class="top-bar bg-dark text-white py-2 d-none d-lg-block">
     <div class="container d-flex justify-content-between align-items-center">
       <div>
         <i class="bi bi-envelope me-1"></i> <a class="text-white text-decoration-none" href="mailto:<?= e(setting('site_email')) ?>"><?= e(setting('site_email')) ?></a>
@@ -56,7 +56,7 @@ $page_title = $page_title ?? setting('site_name');
 
         </div>
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="mainNav">
@@ -64,7 +64,7 @@ $page_title = $page_title ?? setting('site_name');
           <li class="nav-item"><a class="nav-link <?= $current_page == 'index.php' ? 'active' : '' ?>" href="<?= SITE_URL ?>/index.php">Home</a></li>
           <li class="nav-item"><a class="nav-link <?= $current_page == 'about.php' ? 'active' : '' ?>" href="<?= SITE_URL ?>/about.php">About</a></li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle <?= $current_page == 'services.php' ? 'active' : '' ?>" href="#" data-bs-toggle="dropdown">Services</a>
+            <a class="nav-link dropdown-toggle <?= $current_page == 'services.php' ? 'active' : '' ?>" href="#" data-bs-toggle="dropdown" aria-expanded="false">Services</a>
             <ul class="dropdown-menu mega-menu">
               <?php foreach (get_services() as $svc): ?>
                 <li><a class="dropdown-item" href="<?= SITE_URL ?>/services.php#svc-<?= e($svc['slug']) ?>"><i class="bi <?= e($svc['icon']) ?> me-2"></i> <?= e($svc['title']) ?></a></li>
@@ -72,7 +72,7 @@ $page_title = $page_title ?? setting('site_name');
             </ul>
           </li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Study Abroad</a>
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">Study Abroad</a>
             <ul class="dropdown-menu">
               <?php foreach (get_programs() as $p): ?>
                 <li><a class="dropdown-item" href="<?= SITE_URL ?>/program.php?slug=<?= e($p['slug']) ?>"><?= e($p['flag_emoji']) ?> <?= e($p['title']) ?></a></li>
