@@ -12,6 +12,41 @@ if ($action === 'delete' && $id) {
     header('Location: visa_assessments.php'); exit;
 }
 
+// Retry a specific assessment notification from the saved record.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_notification'])) {
+    $resend_id = (int)($_POST['id'] ?? 0);
+    $csrfToken = isset($_POST['csrf_token']) && is_string($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
+    if (!verify_csrf($csrfToken)) {
+        http_response_code(403);
+        die('Invalid CSRF token.');
+    }
+
+    try {
+        if (!$resend_id) throw new RuntimeException('Assessment not found.');
+        $resend_record = get_visa_assessment_by_id($resend_id);
+        if (!is_array($resend_record)) throw new RuntimeException('Assessment not found.');
+        require_once __DIR__ . '/../includes/visa_assessment_mail.php';
+        send_visa_assessment_notification($resend_record);
+
+        $recipient = trim((string)setting('visa_assessment_notification_email', 'info@traveloceans.eu'));
+        if ($recipient === '') $recipient = 'info@traveloceans.eu';
+        $transport = trim((string)setting('smtp_host')) === '' ? 'PHP mail()' : 'SMTP';
+        $_SESSION['flash'] = ['type'=>'success','msg'=>'Assessment email accepted by ' . $transport . ' for ' . $recipient . '. Check spam/quarantine if it is not in the inbox.'];
+    } catch (Throwable $mailError) {
+        $detail = trim($mailError->getMessage());
+        $savedPassword = (string)setting('smtp_password');
+        if ($savedPassword !== '') $detail = str_replace($savedPassword, '[redacted]', $detail);
+        $detail = preg_replace('/[\\r\\n]+/', ' ', $detail);
+        if ($detail === '') $detail = 'The mail transport returned an unspecified error.';
+        if (strlen($detail) > 1000) $detail = substr($detail, 0, 1000) . '…';
+        error_log('[visa_assessment] Admin resend failed for assessment #' . $resend_id . ': ' . $detail);
+        $_SESSION['flash'] = ['type'=>'danger','msg'=>'Assessment email could not be sent: ' . $detail];
+    }
+
+    header('Location: visa_assessments.php' . ($resend_id ? '?id=' . $resend_id : ''));
+    exit;
+}
+
 // Handle status / notes update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_assessment'])) {
     $upd_id = (int)($_POST['id'] ?? 0);
@@ -59,8 +94,14 @@ ob_start();
 <?php if ($record): ?>
   <div class="d-flex justify-content-between align-items-center mb-3">
     <a href="visa_assessments.php" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to assessments</a>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
       <a href="mailto:<?= e($record['email']) ?>?subject=Re: Visa Assessment #<?= (int)$record['id'] ?>" class="btn btn-sm btn-primary"><i class="bi bi-envelope"></i> Reply</a>
+      <form method="post" action="visa_assessments.php?id=<?= (int)$record['id'] ?>" class="d-inline">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+        <input type="hidden" name="id" value="<?= (int)$record['id'] ?>">
+        <input type="hidden" name="resend_notification" value="1">
+        <button type="submit" class="btn btn-sm btn-outline-primary"><i class="bi bi-send"></i> Send Assessment Email</button>
+      </form>
       <a href="https://wa.me/<?= preg_replace('/[^0-9]/','',$record['phone'] ?? '') ?>" target="_blank" class="btn btn-sm btn-success"><i class="bi bi-whatsapp"></i> WhatsApp</a>
     </div>
   </div>
